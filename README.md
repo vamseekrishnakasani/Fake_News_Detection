@@ -20,7 +20,7 @@ fake_news_detector/
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/vamseekrishnakasani/Fake_News_Detection.git
 cd fake-news-detector
 ```
 
