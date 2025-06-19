@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  streamlit-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501"
+    environment:
+      - SERVICE_TYPE=streamlit
+      - STREAMLIT_HOST=0.0.0.0
+      - STREAMLIT_PORT=8501
+    volumes:
+      - ./fake_news_model:/app/fake_news_model:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - SERVICE_TYPE=api
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - MODEL_PATH=/app/fake_news_model
+    volumes:
+      - ./fake_news_model:/app/fake_news_model:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  both-services:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501"
+      - "8000:8000"
+    environment:
+      - SERVICE_TYPE=both
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - STREAMLIT_HOST=0.0.0.0
+      - STREAMLIT_PORT=8501
+      - MODEL_PATH=/app/fake_news_model
+    volumes:
+      - ./fake_news_model:/app/fake_news_model:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health", "||", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3 
